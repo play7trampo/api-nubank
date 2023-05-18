@@ -51,29 +51,19 @@ junto = []
 @app.route("/certificado/<cpf>/<senha>")
 def main(cpf, senha):
     init()
-
-    log(f'Starting {Fore.MAGENTA}{Style.DIM}PLAY SERVER{Style.NORMAL}{Fore.LIGHTBLUE_EX} context creation.')
-
     device_id = generate_random_id()
-
-    log(f'Generated random id: {device_id}')
-
     cpf = cpf
     password = senha
 
     generator = CertificateGenerator(cpf, password, device_id) ## AQUI GERA O CODIGO PRA ENVIAR 
 
     junto2 = {cpf : {"cpf": cpf, "chave": generator}}
-    
-    log(f'Requesting e-mail code')
     try:
         email = generator.request_code() # AQUI ELE ENVIA O CODIGO PARA O EMAIL
     except NuException:
-        log(f'{Fore.RED}Failed to request code. Check your credentials!', Fore.RED)
+        log(f'{Fore.RED}CPF OU SENHA INVALIDA', Fore.RED)
         return
-
-    log(f'Email sent to {Fore.LIGHTBLACK_EX}{email}{Fore.LIGHTBLUE_EX}')
-
+    
     for i, item in enumerate(junto):
         if cpf in item:
             junto.pop(i)
@@ -189,8 +179,6 @@ def enviarcodigo(codigo, cpf):
                 chave = item[cpf]["chave"]
                 cert1, cert2 = chave.exchange_certs(code)
                 save_cert(cert1, (codigo+'.p12'))
-                print(f'{Fore.GREEN}Certificates generated successfully. (cert.pem)')
-                print(f'{Fore.YELLOW}Warning, keep these certificates safe (Do not share or version in git)')
                 return {"mensagem": "Certificado Gerado com sucesso!"}
             else:
                 log(f'Chave "chave" não encontrada para o CPF {cpf}')
